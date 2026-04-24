@@ -1,0 +1,1580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="theme-color" content="#f2f2f7" id="themeColorMeta" />
+  <title>Unit Tracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg:        #f2f2f7;
+      --surface:   #ffffff;
+      --surface2:  #f0f0f5;
+      --border:    rgba(0,0,0,0.08);
+      --text:      #1c1c1e;
+      --text2:     #48484a;
+      --muted:     #8e8e93;
+      --blue:      #007aff;
+      --blue-light:#e8f1ff;
+      --green:     #34c759;
+      --red:       #ff3b30;
+      --orange:    #ff9500;
+      --purple:    #af52de;
+      --gsp:  #34c759;
+      --ac:   #ff9500;
+      --bp:   #ff3b30;
+      --pm:   #af52de;
+      --gold:   #f4a200;
+      --silver: #8e8e93;
+      --bronze: #a2714a;
+      --radius:    14px;
+      --radius-sm: 10px;
+      --shadow:    0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.04);
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.06);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --bg:#000; --surface:#1c1c1e; --surface2:#2c2c2e;
+        --border:rgba(255,255,255,0.1); --text:#fff; --text2:#ebebf5;
+        --blue-light:rgba(0,122,255,0.18);
+        --shadow:0 1px 3px rgba(0,0,0,0.4),0 4px 16px rgba(0,0,0,0.3);
+        --shadow-sm:0 1px 2px rgba(0,0,0,0.3);
+      }
+    }
+    [data-theme="dark"] {
+      --bg:#000; --surface:#1c1c1e; --surface2:#2c2c2e;
+      --border:rgba(255,255,255,0.1); --text:#fff; --text2:#ebebf5;
+      --blue-light:rgba(0,122,255,0.18);
+      --shadow:0 1px 3px rgba(0,0,0,0.4),0 4px 16px rgba(0,0,0,0.3);
+      --shadow-sm:0 1px 2px rgba(0,0,0,0.3);
+    }
+    [data-theme="light"] {
+      --bg:#f2f2f7; --surface:#fff; --surface2:#f0f0f5;
+      --border:rgba(0,0,0,0.08); --text:#1c1c1e; --text2:#48484a;
+      --blue-light:#e8f1ff;
+      --shadow:0 1px 3px rgba(0,0,0,0.08),0 4px 16px rgba(0,0,0,0.04);
+      --shadow-sm:0 1px 2px rgba(0,0,0,0.06);
+    }
+
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+    body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',-apple-system,sans-serif;min-height:100dvh;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased}
+
+    /* ── SCREENS ── */
+    .screen{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:100dvh;padding:40px 24px;text-align:center;gap:20px}
+    .screen.active{display:flex}
+    .screen-icon{width:72px;height:72px;border-radius:18px;background:var(--blue);display:flex;align-items:center;justify-content:center;font-size:34px;margin-bottom:4px;box-shadow:0 8px 24px rgba(0,122,255,0.28)}
+    .screen-title{font-size:28px;font-weight:800;color:var(--text);line-height:1.15}
+    .screen-sub{font-size:15px;color:var(--muted);line-height:1.5;max-width:280px}
+
+    /* INPUTS */
+    .input-group{width:100%;max-width:340px;display:flex;flex-direction:column;gap:10px}
+    .field-label{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.04em;text-transform:uppercase;text-align:left}
+    input[type="text"],input[type="time"],input[type="date"]{width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:17px;font-weight:500;padding:14px 16px;outline:none;transition:border-color .18s;-webkit-appearance:none;box-shadow:var(--shadow-sm)}
+    input:focus{border-color:var(--blue)}
+    input::placeholder{color:var(--muted);font-weight:400}
+    input[type="time"]::-webkit-calendar-picker-indicator{opacity:.4;filter:var(--cal-filter,none)}
+    [data-theme="dark"] input[type="time"]::-webkit-calendar-picker-indicator{filter:invert(1) opacity(.5)}
+    .time-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;max-width:340px}
+    .time-field{display:flex;flex-direction:column;gap:6px}
+    .hours-preview{font-size:14px;color:var(--muted);font-weight:500;background:var(--surface);border-radius:var(--radius-sm);padding:14px 20px;width:100%;max-width:340px;box-shadow:var(--shadow-sm);display:flex;align-items:center;justify-content:center;text-align:center}
+    .hours-preview strong{color:var(--blue);font-size:20px;font-weight:800}
+    .preview-block{display:flex;flex-direction:column;align-items:center;gap:4px}
+    .preview-label{font-size:13px;color:var(--muted)}
+
+    .btn-primary{background:var(--blue);color:#fff;border:none;border-radius:var(--radius-sm);font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:16px;padding:15px 24px;cursor:pointer;width:100%;max-width:340px;touch-action:manipulation;transition:opacity .15s,transform .1s;box-shadow:0 4px 14px rgba(0,122,255,.3)}
+    .btn-primary:active{opacity:.82;transform:scale(.98)}
+    .btn-ghost{background:none;border:none;color:var(--blue);font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer;padding:8px;touch-action:manipulation}
+
+    /* ── APP ── */
+    #app{display:none;flex-direction:column;min-height:100dvh}
+    .app-header{background:var(--surface);padding:52px 20px 14px;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10}
+    .header-row{display:flex;align-items:flex-start;justify-content:space-between}
+    .header-greeting{font-size:24px;font-weight:800;color:var(--text);line-height:1.1}
+    .header-date{font-size:13px;color:var(--muted);font-weight:500;margin-top:2px}
+    .header-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+    .shift-badge{background:var(--blue-light);color:var(--blue);border-radius:20px;padding:5px 12px;font-size:12px;font-weight:700;cursor:pointer;touch-action:manipulation;white-space:nowrap}
+    .shift-badge.no-shift{background:rgba(255,149,0,.12);color:var(--orange)}
+    .theme-toggle{background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:5px 11px;font-size:15px;cursor:pointer;touch-action:manipulation;line-height:1;margin-top:4px}
+
+    .tab-bar{display:flex;background:var(--surface);border-bottom:1px solid var(--border);padding:0 4px}
+    .tab{flex:1;text-align:center;padding:12px 4px 11px;font-size:11px;font-weight:700;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:color .18s,border-color .18s;letter-spacing:.01em;user-select:none;touch-action:manipulation}
+    .tab.active{color:var(--blue);border-bottom-color:var(--blue)}
+
+    .panel{display:none;flex-direction:column;flex:1;overflow-y:auto;padding-bottom:32px}
+    .panel.active{display:flex}
+    .section{padding:18px 16px 0}
+    .section-title{font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
+
+    /* SUMMARY CARD */
+    .summary-card{background:var(--blue);border-radius:var(--radius);padding:20px;margin:14px 16px 0;box-shadow:0 4px 20px rgba(0,122,255,.22);display:flex;align-items:center;justify-content:space-between}
+    .summary-label{font-size:12px;font-weight:600;color:rgba(255,255,255,.7);letter-spacing:.04em;text-transform:uppercase}
+    .summary-total{font-size:52px;font-weight:800;color:#fff;line-height:1;margin-top:4px}
+    .summary-sub{font-size:13px;color:rgba(255,255,255,.7);margin-top:4px;font-weight:500}
+    .summary-right{text-align:right}
+    .summary-hours{font-size:28px;font-weight:800;color:#fff;line-height:1}
+    .summary-hrs-label{font-size:12px;color:rgba(255,255,255,.7);font-weight:600;margin-top:2px}
+
+    /* DATE NAV */
+    .date-nav{display:flex;align-items:center;justify-content:space-between;background:var(--surface);border-radius:var(--radius);margin:10px 16px 0;padding:12px 16px;box-shadow:var(--shadow-sm)}
+    .date-nav-btn{background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--blue);font-size:18px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation;font-weight:700;transition:background .15s}
+    .date-nav-btn:active{background:var(--blue-light)}
+    .date-nav-btn:disabled{color:var(--muted);opacity:.4;cursor:default}
+    .date-nav-center{text-align:center}
+    .date-nav-label{font-size:15px;font-weight:700;color:var(--text)}
+    .date-nav-sub{font-size:12px;color:var(--muted);font-weight:500;margin-top:2px}
+
+    /* Shift sentence card */
+    .shift-sentence-card{display:flex;align-items:center;justify-content:space-between;background:var(--surface);border-radius:var(--radius-sm);margin:10px 16px 0;padding:13px 16px;box-shadow:var(--shadow-sm);gap:12px}
+    .shift-sentence-text{font-size:14px;font-weight:500;color:var(--text);line-height:1.4;flex:1}
+    .shift-sentence-text strong{font-weight:700;color:var(--blue)}
+    .shift-sentence-btn{background:var(--blue-light);color:var(--blue);border:none;border-radius:20px;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:700;padding:6px 14px;cursor:pointer;touch-action:manipulation;white-space:nowrap;flex-shrink:0}
+
+    /* UNIT CARDS */
+    .units-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 16px 0}
+    .unit-card{background:var(--surface);border-radius:var(--radius);padding:14px 14px 12px;display:flex;flex-direction:column;gap:8px;box-shadow:var(--shadow-sm);border:1.5px solid transparent}
+    .unit-card[data-unit="GSP"]{border-color:rgba(52,199,89,.2)}
+    .unit-card[data-unit="AC"] {border-color:rgba(255,149,0,.2)}
+    .unit-card[data-unit="BP"] {border-color:rgba(255,59,48,.2)}
+    .unit-card[data-unit="PM"] {border-color:rgba(175,82,222,.2)}
+    .unit-card-top{display:flex;align-items:center;justify-content:space-between}
+    .unit-pill{font-size:11px;font-weight:800;padding:4px 10px;border-radius:20px;letter-spacing:.04em}
+    .unit-card[data-unit="GSP"] .unit-pill{background:rgba(52,199,89,.12);color:var(--gsp)}
+    .unit-card[data-unit="AC"]  .unit-pill{background:rgba(255,149,0,.12);color:var(--ac)}
+    .unit-card[data-unit="BP"]  .unit-pill{background:rgba(255,59,48,.12);color:var(--bp)}
+    .unit-card[data-unit="PM"]  .unit-pill{background:rgba(175,82,222,.12);color:var(--pm)}
+    .unit-count{font-size:52px;font-weight:800;line-height:1;text-align:center}
+    .unit-card[data-unit="GSP"] .unit-count{color:var(--gsp)}
+    .unit-card[data-unit="AC"]  .unit-count{color:var(--ac)}
+    .unit-card[data-unit="BP"]  .unit-count{color:var(--bp)}
+    .unit-card[data-unit="PM"]  .unit-count{color:var(--pm)}
+    .unit-btns{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+    .unit-btn{border:none;border-radius:8px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:22px;line-height:1;padding:9px 0;cursor:pointer;touch-action:manipulation;transition:opacity .12s,transform .1s}
+    .unit-btn:active{opacity:.7;transform:scale(.94)}
+    .btn-minus{background:var(--bg);color:var(--muted);border:1px solid var(--border)}
+    .unit-card[data-unit="GSP"] .btn-plus{background:rgba(52,199,89,.14);color:var(--gsp)}
+    .unit-card[data-unit="AC"]  .btn-plus{background:rgba(255,149,0,.14);color:var(--ac)}
+    .unit-card[data-unit="BP"]  .btn-plus{background:rgba(255,59,48,.14);color:var(--bp)}
+    .unit-card[data-unit="PM"]  .btn-plus{background:rgba(175,82,222,.14);color:var(--pm)}
+
+    /* POST ROW */
+    .post-row{margin:12px 16px 0;display:flex;flex-direction:column;gap:6px}
+    .btn-post{background:var(--blue);color:#fff;border:none;border-radius:var(--radius-sm);font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:14px;padding:14px;cursor:pointer;touch-action:manipulation;transition:opacity .15s;box-shadow:0 2px 10px rgba(0,122,255,.25)}
+    .btn-post:active{opacity:.8}
+    .btn-post:disabled{opacity:.4;cursor:not-allowed}
+    .last-posted{font-size:12px;color:var(--muted);font-weight:500;text-align:center}
+
+    .action-row{display:flex;gap:10px;margin:8px 16px 0}
+    .btn-action{flex:1;border:none;border-radius:var(--radius-sm);font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:14px;padding:13px;cursor:pointer;touch-action:manipulation;transition:opacity .15s}
+    .btn-action:active{opacity:.75}
+    .btn-reset-day{background:var(--surface);color:var(--red);border:1.5px solid rgba(255,59,48,.2);box-shadow:var(--shadow-sm)}
+
+    /* ── WEEK PANEL ── */
+    .week-summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 16px 0}
+    .week-stat-card{background:var(--surface);border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow-sm)}
+    .week-stat-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+    .week-stat-val{font-size:32px;font-weight:800}
+    .week-stat-card.total .week-stat-val{color:var(--blue)}
+    .week-stat-card.hours .week-stat-val{color:var(--text)}
+    .week-units-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:0 16px}
+    .week-unit-tile{background:var(--surface);border-radius:var(--radius-sm);padding:12px 8px;text-align:center;box-shadow:var(--shadow-sm)}
+    .week-tile-label{font-size:10px;font-weight:700;letter-spacing:.05em;margin-bottom:4px}
+    .week-tile-val{font-size:24px;font-weight:800}
+    .week-unit-tile[data-unit="GSP"] .week-tile-label,.week-unit-tile[data-unit="GSP"] .week-tile-val{color:var(--gsp)}
+    .week-unit-tile[data-unit="AC"]  .week-tile-label,.week-unit-tile[data-unit="AC"]  .week-tile-val{color:var(--ac)}
+    .week-unit-tile[data-unit="BP"]  .week-tile-label,.week-unit-tile[data-unit="BP"]  .week-tile-val{color:var(--bp)}
+    .week-unit-tile[data-unit="PM"]  .week-tile-label,.week-unit-tile[data-unit="PM"]  .week-tile-val{color:var(--pm)}
+
+    /* Day rows — Sun first, ordered */
+    .day-list{display:flex;flex-direction:column;gap:8px;margin:0 16px}
+    .day-card{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-sm);overflow:hidden}
+    .day-card-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px 8px}
+    .day-card-name{font-size:14px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:6px}
+    .today-badge{background:var(--blue);color:#fff;border-radius:20px;padding:2px 8px;font-size:10px;font-weight:700}
+    .day-card-meta{font-size:12px;color:var(--muted);font-weight:500}
+    .day-card-units{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--border)}
+    .day-unit-cell{padding:8px 4px;text-align:center;border-right:1px solid var(--border)}
+    .day-unit-cell:last-child{border-right:none}
+    .day-cell-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:3px}
+    .day-cell-val{font-size:17px;font-weight:800}
+    .day-unit-cell.gsp .day-cell-val{color:var(--gsp)}
+    .day-unit-cell.ac  .day-cell-val{color:var(--ac)}
+    .day-unit-cell.bp  .day-cell-val{color:var(--bp)}
+    .day-unit-cell.pm  .day-cell-val{color:var(--pm)}
+    .day-unit-cell.zero .day-cell-val{color:var(--border)}
+
+    .btn-reset-week{margin:12px 16px 0;width:calc(100% - 32px);background:var(--surface);border:1.5px solid rgba(255,59,48,.2);border-radius:var(--radius-sm);color:var(--red);font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:14px;padding:13px;cursor:pointer;box-shadow:var(--shadow-sm)}
+
+    /* ── LEADERBOARD ── */
+    .lb-controls{margin:14px 16px 0;display:flex;flex-direction:column;gap:8px}
+    .seg-control{display:flex;background:rgba(118,118,128,.12);border-radius:8px;padding:2px}
+    [data-theme="dark"] .seg-control{background:rgba(118,118,128,.24)}
+    .seg-btn{flex:1;text-align:center;padding:8px 6px;font-size:13px;font-weight:700;color:var(--muted);cursor:pointer;border-radius:7px;border:none;background:none;transition:background .18s,color .18s;touch-action:manipulation;font-family:'Plus Jakarta Sans',sans-serif}
+    .seg-btn.active{background:var(--surface);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.1)}
+
+    .lb-refresh-row{display:flex;align-items:center;justify-content:space-between;margin:10px 16px 0}
+    .lb-updated{font-size:12px;color:var(--muted);font-weight:500}
+    .btn-refresh{background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--blue);font-size:15px;padding:6px 14px;cursor:pointer;touch-action:manipulation;font-weight:700;font-family:'Plus Jakarta Sans',sans-serif}
+    .btn-refresh.spinning{animation:spin .6s linear}
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    .lb-list{display:flex;flex-direction:column;gap:10px;margin:10px 16px 0}
+
+    /* Leaderboard card — name + stats layout */
+    .lb-card{background:var(--surface);border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow-sm);border:1.5px solid transparent}
+    .lb-card.rank-1{border-color:rgba(244,162,0,.4);background:rgba(244,162,0,.04)}
+    .lb-card.rank-2{border-color:rgba(142,142,147,.3)}
+    .lb-card.rank-3{border-color:rgba(162,113,74,.3)}
+    .lb-card.is-me {border-color:rgba(0,122,255,.35);background:rgba(0,122,255,.04)}
+
+    .lb-card-top{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+    .lb-rank{font-size:20px;width:30px;flex-shrink:0;font-weight:800;color:var(--muted);text-align:center}
+    .lb-card.rank-1 .lb-rank{color:var(--gold)}
+    .lb-card.rank-2 .lb-rank{color:var(--silver)}
+    .lb-card.rank-3 .lb-rank{color:var(--bronze)}
+    .lb-name-wrap{flex:1;min-width:0}
+    .lb-name{font-size:16px;font-weight:800;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .lb-card.is-me .lb-name::after{content:' · You';color:var(--blue);font-size:12px;font-weight:600}
+    .lb-total-big{font-size:28px;font-weight:800;color:var(--text);flex-shrink:0;line-height:1}
+    .lb-total-lbl{font-size:10px;color:var(--muted);font-weight:600;text-align:right;margin-top:1px}
+    .lb-card.rank-1 .lb-total-big{color:var(--gold)}
+    .lb-card.rank-2 .lb-total-big{color:var(--silver)}
+    .lb-card.rank-3 .lb-total-big{color:var(--bronze)}
+
+    /* Unit chips row */
+    .lb-units-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
+    .lb-chip{font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px}
+    .lb-chip.gsp{background:rgba(52,199,89,.12);color:var(--gsp)}
+    .lb-chip.ac {background:rgba(255,149,0,.12);color:var(--ac)}
+    .lb-chip.bp {background:rgba(255,59,48,.12);color:var(--bp)}
+    .lb-chip.pm {background:rgba(175,82,222,.12);color:var(--pm)}
+
+    /* Hours row */
+    .lb-hours-row{display:flex;align-items:center;gap:6px;padding-top:8px;border-top:1px solid var(--border)}
+    .lb-hours-icon{font-size:13px}
+    .lb-hours-text{font-size:12px;color:var(--muted);font-weight:600}
+    .lb-hours-val{font-size:12px;font-weight:800;color:var(--text)}
+
+    .lb-empty{text-align:center;padding:40px 0;font-size:14px;color:var(--muted);line-height:1.8}
+    .lb-error{text-align:center;padding:20px 0;font-size:13px;color:var(--red)}
+    .lb-updated-txt{font-size:11px;color:var(--muted);text-align:center;margin-top:8px}
+
+    .btn-mgr-clear{margin:12px 16px 0;width:calc(100% - 32px);background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-sm);color:var(--muted);font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:13px;padding:12px;cursor:pointer;box-shadow:var(--shadow-sm)}
+
+    /* MODAL SHEET */
+    .sheet-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:100;align-items:flex-end;justify-content:center;backdrop-filter:blur(2px)}
+    .sheet-overlay.active{display:flex}
+    .sheet{background:var(--surface);border-radius:20px 20px 0 0;width:100%;max-width:480px;padding:0 0 36px;animation:sheetUp .28s cubic-bezier(.32,.72,0,1);max-height:92dvh;overflow-y:auto}
+    @keyframes sheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+    .sheet-handle{width:36px;height:4px;background:rgba(0,0,0,.12);border-radius:2px;margin:10px auto 0}
+    [data-theme="dark"] .sheet-handle{background:rgba(255,255,255,.15)}
+    .sheet-title{font-size:17px;font-weight:700;text-align:center;padding:16px 24px 6px;color:var(--text)}
+    .sheet-body{font-size:14px;color:var(--muted);text-align:center;padding:0 24px 18px;line-height:1.5}
+    .sheet-actions{display:flex;gap:10px;padding:0 16px}
+    .sheet-cancel{flex:1;background:var(--surface2);border:none;border-radius:var(--radius-sm);color:var(--text2);font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:15px;padding:14px;cursor:pointer}
+    .sheet-confirm{flex:1;background:var(--blue);border:none;border-radius:var(--radius-sm);color:#fff;font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:15px;padding:14px;cursor:pointer}
+    .sheet-confirm.red{background:var(--red)}
+    .sheet-confirm:active{opacity:.82}
+
+    /* PIN */
+    .pin-dots{display:flex;justify-content:center;gap:12px;padding:8px 0 4px}
+    .pin-dot{width:13px;height:13px;border-radius:50%;background:rgba(0,0,0,.1);transition:background .15s}
+    [data-theme="dark"] .pin-dot{background:rgba(255,255,255,.15)}
+    .pin-dot.filled{background:var(--blue)}
+    .pin-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px 16px 0}
+    .pin-key{background:var(--bg);border:none;border-radius:12px;color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:22px;padding:15px 0;cursor:pointer;touch-action:manipulation;text-align:center;transition:background .12s}
+    .pin-key:active{background:var(--surface2)}
+    .pin-key.del{font-size:17px;color:var(--muted)}
+    .pin-err{font-size:13px;color:var(--red);text-align:center;padding:8px 0 0;min-height:28px;font-weight:600}
+
+    /* ── MANAGER PANEL ── */
+    .mgr-months-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 16px 0}
+    .mgr-month-btn{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:12px 10px;cursor:pointer;touch-action:manipulation;text-align:left;box-shadow:var(--shadow-sm)}
+    .mgr-month-btn.has-dates{border-color:rgba(0,122,255,.3)}
+    .mgr-month-name{font-size:13px;font-weight:700;color:var(--text)}
+    .mgr-month-dates{font-size:11px;color:var(--blue);font-weight:600;margin-top:3px}
+    .mgr-month-empty{font-size:11px;color:var(--muted);margin-top:3px}
+    .mgr-action-card{display:flex;align-items:center;gap:12px;background:var(--surface);border-radius:var(--radius);padding:14px 16px;margin:0 16px;box-shadow:var(--shadow-sm);cursor:pointer;touch-action:manipulation;border:1.5px solid rgba(255,59,48,.2)}
+    .mgr-action-icon{font-size:22px;flex-shrink:0}
+    .mgr-action-info{flex:1}
+    .mgr-action-title{font-size:14px;font-weight:700;color:var(--red)}
+    .mgr-action-sub{font-size:12px;color:var(--muted);margin-top:2px}
+    .mgr-action-arrow{font-size:20px;color:var(--muted)}
+
+    /* Month leaderboard */
+    .lb-month-heading{font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:12px 16px 8px}
+    .lb-month-card{background:var(--surface);border-radius:var(--radius);margin:0 16px 10px;box-shadow:var(--shadow-sm);border:1.5px solid transparent;overflow:hidden}
+    .lb-month-card.rank-1{border-color:rgba(244,162,0,.4);background:rgba(244,162,0,.03)}
+    .lb-month-card.rank-2{border-color:rgba(142,142,147,.3)}
+    .lb-month-card.rank-3{border-color:rgba(162,113,74,.3)}
+    .lb-month-card.is-me {border-color:rgba(0,122,255,.35);background:rgba(0,122,255,.03)}
+    .lb-month-header{display:flex;align-items:center;gap:10px;padding:12px 14px 8px}
+    .lb-month-rank{font-size:18px;width:26px;flex-shrink:0;text-align:center;font-weight:800;color:var(--muted)}
+    .lb-month-card.rank-1 .lb-month-rank{color:var(--gold)}
+    .lb-month-card.rank-2 .lb-month-rank{color:var(--silver)}
+    .lb-month-card.rank-3 .lb-month-rank{color:var(--bronze)}
+    .lb-month-name{flex:1;font-size:15px;font-weight:800;color:var(--text)}
+    .lb-month-card.is-me .lb-month-name::after{content:' · You';color:var(--blue);font-size:11px;font-weight:600}
+    .lb-month-total{font-size:24px;font-weight:800;color:var(--text)}
+    .lb-month-card.rank-1 .lb-month-total{color:var(--gold)}
+    .lb-month-card.rank-2 .lb-month-total{color:var(--silver)}
+    .lb-month-card.rank-3 .lb-month-total{color:var(--bronze)}
+    .lb-month-weeks{border-top:1px solid var(--border)}
+    .lb-month-week-row{display:flex;align-items:center;justify-content:space-between;padding:7px 14px;border-bottom:1px solid var(--border)}
+    .lb-month-week-row:last-child{border-bottom:none}
+    .lb-month-week-label{font-size:11px;font-weight:600;color:var(--muted)}
+    .lb-month-week-chips{display:flex;gap:4px;flex-wrap:wrap}
+    .lb-month-week-total{font-size:13px;font-weight:800;color:var(--text)}
+
+    /* ── TOAST ── */
+    .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(12px);background:rgba(28,28,30,.92);color:#fff;border-radius:20px;padding:10px 20px;font-size:14px;font-weight:600;opacity:0;transition:opacity .2s,transform .2s;z-index:300;white-space:nowrap;pointer-events:none;backdrop-filter:blur(8px)}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    @keyframes bump{0%{transform:scale(1)}35%{transform:scale(1.18)}100%{transform:scale(1)}}
+    .bumping{animation:bump .22s ease}
+    .spacer{height:16px}
+  </style>
+</head>
+<body>
+
+<!-- PASSCODE SCREEN -->
+<div class="screen" id="passcodeScreen">
+  <div class="screen-icon">🔐</div>
+  <div class="screen-title">Enter Passcode</div>
+  <div class="screen-sub">This app is for employees only.</div>
+  <div class="pin-dots" style="margin:0">
+    <div class="pin-dot" id="pc0"></div>
+    <div class="pin-dot" id="pc1"></div>
+    <div class="pin-dot" id="pc2"></div>
+    <div class="pin-dot" id="pc3"></div>
+  </div>
+  <div class="pin-grid" style="width:100%;max-width:300px">
+    <button class="pin-key" data-pc="1">1</button><button class="pin-key" data-pc="2">2</button><button class="pin-key" data-pc="3">3</button>
+    <button class="pin-key" data-pc="4">4</button><button class="pin-key" data-pc="5">5</button><button class="pin-key" data-pc="6">6</button>
+    <button class="pin-key" data-pc="7">7</button><button class="pin-key" data-pc="8">8</button><button class="pin-key" data-pc="9">9</button>
+    <button class="pin-key" data-pc="0" style="grid-column:2">0</button>
+    <button class="pin-key del" id="pcDel">⌫</button>
+  </div>
+  <div class="pin-err" id="pcErr"></div>
+</div>
+
+<!-- ONBOARDING -->
+<div class="screen" id="onboarding">
+  <div class="screen-icon">📊</div>
+  <div class="screen-title">Unit Tracker</div>
+  <div class="screen-sub">Track your sales and see how you stack up against the team.</div>
+  <div class="input-group">
+    <div class="field-label">Your Name</div>
+    <input type="text" id="nameInput" placeholder="First name" maxlength="24" autocomplete="off" autocorrect="off" spellcheck="false" />
+  </div>
+  <button class="btn-primary" id="startBtn">Get Started</button>
+</div>
+
+<!-- SHIFT SCREEN -->
+<div class="screen" id="shiftScreen">
+  <div class="screen-icon">⏱️</div>
+  <div class="screen-title" id="shiftScreenTitle">What's your shift?</div>
+  <div class="screen-sub">Enter your hours so we can track your total time worked.</div>
+  <div class="time-row">
+    <div class="time-field">
+      <div class="field-label">Start</div>
+      <input type="time" id="shiftStart" />
+    </div>
+    <div class="time-field">
+      <div class="field-label">End</div>
+      <input type="time" id="shiftEnd" />
+    </div>
+  </div>
+  <div class="hours-preview" id="hoursPreview"><span class="preview-label">Enter your times above</span></div>
+  <button class="btn-primary" id="shiftGoBtn">Start Tracking</button>
+  <button class="btn-ghost" id="shiftSkipBtn">Skip for now</button>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="app-header">
+    <div class="header-row">
+      <div>
+        <div class="header-greeting" id="headerGreeting">Good morning</div>
+        <div class="header-date" id="headerDate"></div>
+      </div>
+      <div class="header-right">
+        <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">🌙</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-bar">
+    <div class="tab active" data-tab="today">Today</div>
+    <div class="tab" data-tab="week">Week</div>
+    <div class="tab" data-tab="board">Leaderboard</div>
+    <div class="tab" data-tab="manager" id="managerTab" style="display:none">⚙️ Mgr</div>
+  </div>
+
+  <!-- TODAY PANEL -->
+  <div class="panel active" id="panel-today">
+    <div class="summary-card">
+      <div class="summary-left">
+        <div class="summary-label">Units — <span id="summaryDateLabel">Today</span></div>
+        <div class="summary-total" id="totalDisplay">0</div>
+        <div class="summary-sub" id="summarySubtitle">Tap + to log a unit</div>
+      </div>
+      <div class="summary-right" id="summaryHoursBlock" style="display:none">
+        <div class="summary-hours" id="summaryHours">0</div>
+        <div class="summary-hrs-label">hrs worked</div>
+      </div>
+    </div>
+
+    <div class="date-nav">
+      <button class="date-nav-btn" id="prevDayBtn">‹</button>
+      <div class="date-nav-center">
+        <div class="date-nav-label" id="dateNavLabel">Today</div>
+        <div class="date-nav-sub" id="dateNavSub"></div>
+      </div>
+      <button class="date-nav-btn" id="nextDayBtn" disabled>›</button>
+    </div>
+
+    <!-- Shift sentence card — shown for both today and past days -->
+    <div class="shift-sentence-card" id="shiftSentenceCard">
+      <div class="shift-sentence-text" id="shiftSentenceText"></div>
+      <button class="shift-sentence-btn" id="shiftSentenceBtn">Set hours</button>
+    </div>
+
+    <div class="units-grid">
+      <div class="unit-card" data-unit="GSP">
+        <div class="unit-card-top"><div class="unit-pill">GSP</div></div>
+        <div class="unit-count" id="count-GSP">0</div>
+        <div class="unit-btns">
+          <button class="unit-btn btn-minus" id="rem-GSP">−</button>
+          <button class="unit-btn btn-plus"  id="add-GSP">+</button>
+        </div>
+      </div>
+      <div class="unit-card" data-unit="AC">
+        <div class="unit-card-top"><div class="unit-pill">AC+</div></div>
+        <div class="unit-count" id="count-AC">0</div>
+        <div class="unit-btns">
+          <button class="unit-btn btn-minus" id="rem-AC">−</button>
+          <button class="unit-btn btn-plus"  id="add-AC">+</button>
+        </div>
+      </div>
+      <div class="unit-card" data-unit="BP">
+        <div class="unit-card-top"><div class="unit-pill">BP</div></div>
+        <div class="unit-count" id="count-BP">0</div>
+        <div class="unit-btns">
+          <button class="unit-btn btn-minus" id="rem-BP">−</button>
+          <button class="unit-btn btn-plus"  id="add-BP">+</button>
+        </div>
+      </div>
+      <div class="unit-card" data-unit="PM">
+        <div class="unit-card-top"><div class="unit-pill">PM</div></div>
+        <div class="unit-count" id="count-PM">0</div>
+        <div class="unit-btns">
+          <button class="unit-btn btn-minus" id="rem-PM">−</button>
+          <button class="unit-btn btn-plus"  id="add-PM">+</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="post-row">
+      <button class="btn-post" id="submitBtn">🏆 Post to Leaderboard</button>
+      <div class="last-posted" id="lastPostedText"></div>
+    </div>
+    <div class="action-row">
+      <button class="btn-action btn-reset-day" id="resetDayBtn">Reset Day</button>
+    </div>
+    <div class="spacer"></div>
+  </div>
+
+  <!-- WEEK PANEL -->
+  <div class="panel" id="panel-week">
+    <div class="week-summary-grid">
+      <div class="week-stat-card total">
+        <div class="week-stat-label">Total Units</div>
+        <div class="week-stat-val" id="weekTotalVal">0</div>
+      </div>
+      <div class="week-stat-card hours">
+        <div class="week-stat-label">Hours Worked</div>
+        <div class="week-stat-val" id="weekHoursVal">—</div>
+      </div>
+    </div>
+    <div class="section"><div class="section-title">By Unit</div></div>
+    <div class="week-units-grid">
+      <div class="week-unit-tile" data-unit="GSP"><div class="week-tile-label">GSP</div><div class="week-tile-val" id="week-GSP">0</div></div>
+      <div class="week-unit-tile" data-unit="AC"> <div class="week-tile-label">AC+</div><div class="week-tile-val" id="week-AC">0</div></div>
+      <div class="week-unit-tile" data-unit="BP"> <div class="week-tile-label">BP</div> <div class="week-tile-val" id="week-BP">0</div></div>
+      <div class="week-unit-tile" data-unit="PM"> <div class="week-tile-label">PM</div> <div class="week-tile-val" id="week-PM">0</div></div>
+    </div>
+    <div class="section"><div class="section-title">Day by Day</div></div>
+    <div class="day-list" id="dayHistoryList"><div class="lb-empty">No data this week yet</div></div>
+    <button class="btn-reset-week" id="resetWeekBtn">Reset This Week</button>
+    <div class="spacer"></div>
+  </div>
+
+  <!-- LEADERBOARD PANEL -->
+  <div class="panel" id="panel-board">
+    <div class="lb-controls">
+      <div class="seg-control">
+        <button class="seg-btn active" data-period="today">Today</button>
+        <button class="seg-btn" data-period="week" id="lbWeekBtn">This Week</button>
+        <button class="seg-btn" data-period="month" id="lbMonthBtn">This Month</button>
+      </div>
+    </div>
+    <div class="lb-refresh-row">
+      <div class="lb-updated" id="lbUpdated"></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn-refresh" id="mgrLockBtn" title="Manager">🔒</button>
+        <button class="btn-refresh" id="refreshBtn">↻ Refresh</button>
+      </div>
+    </div>
+    <div class="lb-list" id="lbList"><div class="lb-empty">Loading…</div></div>
+    <div class="spacer"></div>
+  </div>
+
+  <!-- MANAGER PANEL -->
+  <div class="panel" id="panel-manager">
+    <div class="section" style="padding-top:20px">
+      <div class="section-title">Manager Controls</div>
+    </div>
+
+    <!-- Month Settings -->
+    <div class="section" style="padding-top:14px">
+      <div class="section-title">Month Settings</div>
+      <div class="mgr-months-grid" id="mgrMonthsGrid"></div>
+    </div>
+
+    <!-- Clear Leaderboard -->
+    <div class="section" style="padding-top:14px">
+      <div class="section-title">Leaderboard</div>
+      <div class="mgr-action-card" id="mgrClearBtn">
+        <div class="mgr-action-icon">🗑️</div>
+        <div class="mgr-action-info">
+          <div class="mgr-action-title">Clear Leaderboard</div>
+          <div class="mgr-action-sub">Wipes current week scores for all employees</div>
+        </div>
+        <div class="mgr-action-arrow">›</div>
+      </div>
+    </div>
+    <div class="spacer"></div>
+  </div>
+</div>
+
+<!-- SHEETS -->
+<div class="sheet-overlay" id="confirmSheet">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" id="confirmTitle">Reset?</div>
+    <div class="sheet-body" id="confirmBody">This can't be undone.</div>
+    <div class="sheet-actions">
+      <button class="sheet-cancel" id="confirmCancel">Cancel</button>
+      <button class="sheet-confirm red" id="confirmOk">Reset</button>
+    </div>
+  </div>
+</div>
+
+<div class="sheet-overlay" id="missingHoursSheet">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">⏱ Hours Required</div>
+    <div class="sheet-body" id="missingHoursBody"></div>
+    <div class="sheet-actions">
+      <button class="sheet-confirm" id="missingHoursOk">Got it</button>
+    </div>
+  </div>
+</div>
+
+<div class="sheet-overlay" id="postSheet">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Post to Leaderboard?</div>
+    <div class="sheet-body" id="postBody">Share your score with the team.</div>
+    <div class="sheet-actions">
+      <button class="sheet-cancel" id="postCancel">Cancel</button>
+      <button class="sheet-confirm" id="postOk">Post It</button>
+    </div>
+  </div>
+</div>
+
+<!-- Shift edit sheet — used for today AND past days -->
+<div class="sheet-overlay" id="shiftEditSheet">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" id="shiftEditTitle">Update Shift</div>
+    <div class="sheet-body" id="shiftEditBody">Set your start and end time.</div>
+    <div style="padding:0 16px 16px;display:flex;flex-direction:column;gap:12px">
+      <div class="time-row" style="max-width:100%">
+        <div class="time-field">
+          <div class="field-label">Start</div>
+          <input type="time" id="editShiftStart" />
+        </div>
+        <div class="time-field">
+          <div class="field-label">End</div>
+          <input type="time" id="editShiftEnd" />
+        </div>
+      </div>
+      <div class="hours-preview" id="editHoursPreview" style="max-width:100%"><span class="preview-label">—</span></div>
+    </div>
+    <div class="sheet-actions">
+      <button class="sheet-cancel" id="shiftEditCancel">Cancel</button>
+      <button class="sheet-cancel" id="shiftDayOffBtn" style="color:var(--muted)">Day Off</button>
+      <button class="sheet-confirm" id="shiftEditOk">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Month date setter sheet -->
+<div class="sheet-overlay" id="monthDateSheet">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" id="monthDateTitle">Set April Dates</div>
+    <div class="sheet-body">Enter the start and end dates for this month period.</div>
+    <div style="padding:0 16px 16px;display:flex;flex-direction:column;gap:12px">
+      <div class="time-row" style="max-width:100%">
+        <div class="time-field">
+          <div class="field-label">Start Date</div>
+          <input type="date" id="monthStartDate" style="font-size:15px;padding:12px 10px" />
+        </div>
+        <div class="time-field">
+          <div class="field-label">End Date</div>
+          <input type="date" id="monthEndDate" style="font-size:15px;padding:12px 10px" />
+        </div>
+      </div>
+    </div>
+    <div class="sheet-actions">
+      <button class="sheet-cancel" id="monthDateCancel">Cancel</button>
+      <button class="sheet-confirm" id="monthDateOk">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="sheet-overlay" id="pinSheet">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Manager Access</div>
+    <div class="pin-dots">
+      <div class="pin-dot" id="pd0"></div><div class="pin-dot" id="pd1"></div>
+      <div class="pin-dot" id="pd2"></div><div class="pin-dot" id="pd3"></div>
+      <div class="pin-dot" id="pd4"></div><div class="pin-dot" id="pd5"></div>
+    </div>
+    <div class="pin-grid">
+      <button class="pin-key" data-d="1">1</button><button class="pin-key" data-d="2">2</button><button class="pin-key" data-d="3">3</button>
+      <button class="pin-key" data-d="4">4</button><button class="pin-key" data-d="5">5</button><button class="pin-key" data-d="6">6</button>
+      <button class="pin-key" data-d="7">7</button><button class="pin-key" data-d="8">8</button><button class="pin-key" data-d="9">9</button>
+      <button class="pin-key" data-d="0" style="grid-column:2">0</button>
+      <button class="pin-key del" id="pinDel">⌫</button>
+    </div>
+    <div class="pin-err" id="pinErr"></div>
+    <div class="sheet-actions" style="margin-top:8px">
+      <button class="sheet-cancel" id="pinCancel">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SCRIPT_URL  = 'https://script.google.com/macros/s/AKfycbwy9SEU-RJFr2KS9bqFql692mfc9stLLlC9H06buUoPHDQh9S9mE2Q6Z5PUQLR7Cgom/exec';
+const MANAGER_PIN  = '362353';
+const APP_PASSCODE = '0353';
+const UNITS      = ['GSP','AC','BP','PM'];
+const COLOR      = { GSP:'#34c759', AC:'#ff9500', BP:'#ff3b30', PM:'#af52de' };
+const DAYS       = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const DAYS_SHORT = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+let lbPeriod     = 'today';
+let pinEntry     = '';
+let pcEntry      = '';
+let confirmAction = null;
+let dayOffset    = 0;
+let shiftEditTargetKey = null;
+
+// ── DATE HELPERS ──
+function dateFromOffset(off) { const d=new Date(); d.setDate(d.getDate()+off); return d; }
+function keyFromDate(d) { return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+function todayKey()  { return keyFromDate(new Date()); }
+function activeKey() { return keyFromDate(dateFromOffset(dayOffset)); }
+
+// Sunday of current week
+function sundayOfThisWeek() {
+  const d = new Date(); d.setDate(d.getDate() - d.getDay()); return d;
+}
+function sundayKey() { return keyFromDate(sundayOfThisWeek()); }
+
+function weekKey(d) {
+  d = d||new Date(); const day=d.getDay();
+  const sun=new Date(d); sun.setDate(d.getDate()-day);
+  return `week-${sun.getFullYear()}-${String(sun.getMonth()+1).padStart(2,'0')}-${String(sun.getDate()).padStart(2,'0')}`;
+}
+function weekRange() {
+  const d=new Date(),day=d.getDay();
+  const sun=new Date(d); sun.setDate(d.getDate()-day);
+  const sat=new Date(sun); sat.setDate(sun.getDate()+6);
+  const fmt=dt=>dt.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+  return fmt(sun)+' – '+fmt(sat);
+}
+
+// ── STORAGE ──
+function loadDay(key) {
+  key=key||activeKey();
+  return JSON.parse(localStorage.getItem('day-'+key)||'null')||{counts:{GSP:0,AC:0,BP:0,PM:0},log:[],lastPosted:null};
+}
+function saveDay(data,key) {
+  key=key||activeKey();
+  localStorage.setItem('day-'+key,JSON.stringify(data));
+  flushToWeek(key);
+}
+function loadWeekStore() { return JSON.parse(localStorage.getItem(weekKey())||'null')||{}; }
+function saveWeekStore(w) { localStorage.setItem(weekKey(),JSON.stringify(w)); }
+function flushToWeek(dateKey) {
+  dateKey=dateKey||activeKey();
+  const data=loadDay(dateKey);
+  const w=loadWeekStore();
+  w[dateKey]={ counts:{...data.counts}, dayLabel:DAYS_SHORT[new Date(dateKey+'T12:00:00').getDay()], shiftHours:loadShift(dateKey)?.hours||null };
+  saveWeekStore(w);
+}
+
+function shiftKey(dateKey) { return 'shift-'+(dateKey||todayKey()); }
+function loadShift(dateKey) { return JSON.parse(localStorage.getItem(shiftKey(dateKey))||'null'); }
+function saveShift(s,dateKey) { localStorage.setItem(shiftKey(dateKey||todayKey()),JSON.stringify(s)); }
+
+function calcHours(start,end) {
+  if(!start||!end) return null;
+  const [sh,sm]=start.split(':').map(Number);
+  const [eh,em]=end.split(':').map(Number);
+  let mins=(eh*60+em)-(sh*60+sm);
+  if(mins<=0) mins+=1440;
+  return Math.round((mins/60)*100)/100;
+}
+function fmtTime(t) {
+  if(!t) return '';
+  const [h,m]=t.split(':').map(Number);
+  return `${h%12||12}:${String(m).padStart(2,'0')} ${h>=12?'PM':'AM'}`;
+}
+function fmtHours(h) {
+  if(h===null||h===undefined) return '—';
+  return h%1===0?h+'h':h.toFixed(1)+'h';
+}
+function greeting() {
+  const h=new Date().getHours();
+  return h<12?'Good morning':h<17?'Good afternoon':'Good evening';
+}
+
+// ── PASSCODE ──
+function showPasscodeScreen() {
+  ['onboarding','shiftScreen'].forEach(id => document.getElementById(id).classList.remove('active'));
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('passcodeScreen').classList.add('active');
+}
+function updatePcDots() {
+  for (let i = 0; i < 4; i++)
+    document.getElementById('pc'+i).classList.toggle('filled', i < pcEntry.length);
+}
+function afterPasscode() {
+  document.getElementById('passcodeScreen').classList.remove('active');
+  const name = localStorage.getItem('userName');
+  if (!name) { showScreen('onboarding'); return; }
+  const shift = loadShift(todayKey());
+  if (!shift) { showScreen('shift'); return; }
+  showApp(name);
+}
+document.querySelectorAll('.pin-key[data-pc]').forEach(k => {
+  k.addEventListener('click', () => {
+    if (pcEntry.length >= 4) return;
+    pcEntry += k.dataset.pc; updatePcDots();
+    if (pcEntry.length === 4) {
+      if (pcEntry === APP_PASSCODE) {
+        localStorage.setItem('appUnlocked', '1');
+        afterPasscode();
+      } else {
+        document.getElementById('pcErr').textContent = 'Incorrect passcode';
+        pcEntry = ''; updatePcDots();
+      }
+    }
+  });
+});
+document.getElementById('pcDel').addEventListener('click', () => {
+  pcEntry = pcEntry.slice(0,-1); updatePcDots();
+  document.getElementById('pcErr').textContent = '';
+});
+
+// ── INIT ──
+window.addEventListener('load',()=>{
+  const saved=localStorage.getItem('theme');
+  if(saved) applyTheme(saved);
+  else if(window.matchMedia('(prefers-color-scheme: dark)').matches) applyTheme('dark');
+  else applyTheme('light');
+
+  if (!localStorage.getItem('appUnlocked')) { showPasscodeScreen(); return; }
+
+  // Pre-populate April (index 3) if not already set
+  const existingSettings = loadMonthSettings();
+  if (!existingSettings[3]) {
+    existingSettings[3] = { start: '2026-04-05', end: '2026-05-02' };
+    saveMonthSettings(existingSettings);
+  }
+
+  const name=localStorage.getItem('userName');
+  if(!name){showScreen('onboarding');return;}
+  const shift=loadShift(todayKey());
+  if(!shift){showScreen('shift');return;}
+  showApp(name);
+});
+
+function showScreen(which){
+  document.getElementById('onboarding').classList.remove('active');
+  document.getElementById('shiftScreen').classList.remove('active');
+  document.getElementById('app').style.display='none';
+  if(which==='onboarding') document.getElementById('onboarding').classList.add('active');
+  if(which==='shift'){
+    document.getElementById('shiftScreen').classList.add('active');
+    document.getElementById('shiftStart').value='09:00';
+    document.getElementById('shiftEnd').value='17:00';
+    updateHoursPreview('shiftStart','shiftEnd','hoursPreview');
+    const name=localStorage.getItem('userName');
+    document.getElementById('shiftScreenTitle').textContent=name?`What's your shift, ${name.split(' ')[0]}?`:"What's your shift?";
+  }
+}
+
+function showApp(name){
+  document.getElementById('onboarding').classList.remove('active');
+  document.getElementById('shiftScreen').classList.remove('active');
+  document.getElementById('app').style.display='flex';
+  document.getElementById('app').style.flexDirection='column';
+  document.getElementById('app').style.minHeight='100dvh';
+  document.getElementById('headerGreeting').textContent=greeting()+', '+name.split(' ')[0];
+  document.getElementById('headerDate').textContent=new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
+  dayOffset=0;
+  renderTodayPanel();
+  renderWeekPanel();
+}
+
+// ── ONBOARDING ──
+document.getElementById('startBtn').addEventListener('click',()=>{
+  const v=document.getElementById('nameInput').value.trim();
+  if(!v){showToast('Enter your name first');return;}
+  localStorage.setItem('userName',v);
+  showScreen('shift');
+});
+document.getElementById('nameInput').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('startBtn').click();});
+
+// ── SHIFT SCREEN ──
+function updateHoursPreview(startId,endId,previewId){
+  const s=document.getElementById(startId).value;
+  const e=document.getElementById(endId).value;
+  const el=document.getElementById(previewId);
+  if(!s||!e){el.innerHTML='<span class="preview-label">Enter your times above</span>';return;}
+  const h=calcHours(s,e);
+  el.innerHTML=`<div class="preview-block"><strong>${fmtHours(h)}</strong><span class="preview-label">shift &nbsp;·&nbsp; ${fmtTime(s)} to ${fmtTime(e)}</span></div>`;
+}
+document.getElementById('shiftStart').addEventListener('change',()=>updateHoursPreview('shiftStart','shiftEnd','hoursPreview'));
+document.getElementById('shiftEnd').addEventListener('change',  ()=>updateHoursPreview('shiftStart','shiftEnd','hoursPreview'));
+
+document.getElementById('shiftGoBtn').addEventListener('click',()=>{
+  const s=document.getElementById('shiftStart').value;
+  const e=document.getElementById('shiftEnd').value;
+  if(!s||!e){showToast('Enter both times');return;}
+  saveShift({start:s,end:e,hours:calcHours(s,e)},todayKey());
+  flushToWeek(todayKey());
+  showApp(localStorage.getItem('userName'));
+});
+document.getElementById('shiftSkipBtn').addEventListener('click',()=>{
+  saveShift({skipped:true,start:null,end:null,hours:null},todayKey());
+  showApp(localStorage.getItem('userName'));
+});
+
+// ── SHIFT BADGE (today only) ──
+function updateShiftBadge(){
+  const shift=loadShift(todayKey());
+  const badge=document.getElementById('shiftBadge');
+  if(shift&&shift.start&&shift.end){
+    badge.textContent=fmtTime(shift.start)+' – '+fmtTime(shift.end);
+    badge.className='shift-badge';
+  } else {
+    badge.textContent='Set shift';
+    badge.className='shift-badge no-shift';
+  }
+}
+
+// ── SHIFT EDIT SHEET (works for any date) ──
+let _shiftEditResolve=null;
+function openShiftEdit(dateKey){
+  shiftEditTargetKey=dateKey||todayKey();
+  const isToday=shiftEditTargetKey===todayKey();
+  document.getElementById('shiftEditTitle').textContent=isToday?'Update Today\'s Shift':'Set Shift for '+DAYS_SHORT[new Date(shiftEditTargetKey+'T12:00:00').getDay()];
+  document.getElementById('shiftEditBody').textContent=isToday?'Change your start and end time for today.':'Add shift hours for this day.';
+  const shift=loadShift(shiftEditTargetKey);
+  // If it was a day off or no times set, use sensible defaults
+  document.getElementById('editShiftStart').value = (shift && shift.start) ? shift.start : '09:00';
+  document.getElementById('editShiftEnd').value   = (shift && shift.end)   ? shift.end   : '17:00';
+  updateHoursPreview('editShiftStart','editShiftEnd','editHoursPreview');
+  document.getElementById('shiftEditSheet').classList.add('active');
+}
+document.getElementById('editShiftStart').addEventListener('change',()=>updateHoursPreview('editShiftStart','editShiftEnd','editHoursPreview'));
+document.getElementById('editShiftEnd').addEventListener('change',  ()=>updateHoursPreview('editShiftStart','editShiftEnd','editHoursPreview'));
+document.getElementById('shiftEditCancel').addEventListener('click',()=>document.getElementById('shiftEditSheet').classList.remove('active'));
+document.getElementById('shiftEditOk').addEventListener('click',()=>{
+  const s=document.getElementById('editShiftStart').value;
+  const e=document.getElementById('editShiftEnd').value;
+  if(!s||!e){showToast('Enter both times');return;}
+  saveShift({start:s,end:e,hours:calcHours(s,e)},shiftEditTargetKey);
+  flushToWeek(shiftEditTargetKey);
+  document.getElementById('shiftEditSheet').classList.remove('active');
+  renderTodayPanel();
+  renderWeekPanel();
+  showToast('Shift saved');
+});
+
+document.getElementById('shiftDayOffBtn').addEventListener('click', () => {
+  // Save a "day off" marker — satisfies the hours requirement with 0 hours
+  saveShift({ dayOff: true, start: null, end: null, hours: 0 }, shiftEditTargetKey);
+  flushToWeek(shiftEditTargetKey);
+  document.getElementById('shiftEditSheet').classList.remove('active');
+  renderTodayPanel();
+  renderWeekPanel();
+  showToast('Marked as day off');
+});
+
+// Shift sentence card button — always edits the active date's shift
+document.getElementById('shiftSentenceBtn').addEventListener('click', () => {
+  openShiftEdit(activeKey());
+});
+
+// ── TABS ──
+function switchTab(tabName) {
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  const tabEl = document.querySelector(`.tab[data-tab="${tabName}"]`);
+  if (tabEl) tabEl.classList.add('active');
+  const panelEl = document.getElementById('panel-'+tabName);
+  if (panelEl) panelEl.classList.add('active');
+  if(tabName==='week')  renderWeekPanel();
+  if(tabName==='board') fetchLeaderboard();
+}
+document.querySelectorAll('.tab').forEach(tab=>{
+  tab.addEventListener('click',()=>switchTab(tab.dataset.tab));
+});
+
+// Leaderboard tab also opens pin if manager tab not yet visible
+
+// ── DATE NAV — limit back to Sunday of this week ──
+document.getElementById('prevDayBtn').addEventListener('click',()=>{
+  // How many days back can we go? From today back to Sunday
+  const todayDOW=new Date().getDay(); // 0=Sun
+  const minOffset=-todayDOW; // e.g. if today is Wed (3), min is -3
+  if(dayOffset>minOffset){dayOffset--;renderTodayPanel();}
+});
+document.getElementById('nextDayBtn').addEventListener('click',()=>{
+  if(dayOffset<0){dayOffset++;renderTodayPanel();}
+});
+
+// ── UNIT BUTTONS ──
+UNITS.forEach(unit=>{
+  document.getElementById('add-'+unit).addEventListener('click',()=>{
+    const data=loadDay();
+    data.counts[unit]++;
+    if(dayOffset===0) data.log.unshift({unit,time:new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})});
+    saveDay(data); renderTodayPanel(); bump(unit);
+    showToast('+1 '+(unit==='AC'?'AC+':unit));
+  });
+  document.getElementById('rem-'+unit).addEventListener('click',()=>{
+    const data=loadDay();
+    if(data.counts[unit]<=0){showToast('Already at 0');return;}
+    data.counts[unit]--;
+    const idx=data.log.findIndex(l=>l.unit===unit);
+    if(idx!==-1) data.log.splice(idx,1);
+    saveDay(data); renderTodayPanel();
+    showToast('Removed 1 '+(unit==='AC'?'AC+':unit));
+  });
+});
+
+// ── RENDER TODAY ──
+function renderTodayPanel(){
+  const key=activeKey();
+  const data=loadDay(key);
+  const isToday=dayOffset===0;
+  const activeDate=dateFromOffset(dayOffset);
+
+  // Date nav
+  const todayDOW=new Date().getDay();
+  const minOffset=-todayDOW;
+  document.getElementById('prevDayBtn').disabled=dayOffset<=minOffset;
+  document.getElementById('nextDayBtn').disabled=dayOffset>=0;
+  document.getElementById('dateNavLabel').textContent=isToday?'Today':DAYS[activeDate.getDay()];
+  document.getElementById('dateNavSub').textContent=activeDate.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+  document.getElementById('summaryDateLabel').textContent=isToday?'Today':DAYS_SHORT[activeDate.getDay()];
+
+  // Past-day shift row → now a natural-language sentence for ALL days
+  const shift = loadShift(key);
+  const card  = document.getElementById('shiftSentenceCard');
+  const txt   = document.getElementById('shiftSentenceText');
+  const btn   = document.getElementById('shiftSentenceBtn');
+
+  if (shift && shift.dayOff) {
+    if (isToday) {
+      txt.innerHTML = `<span style="color:var(--muted)">Today is marked as a</span> <strong>day off</strong>`;
+    } else {
+      txt.innerHTML = `<span style="color:var(--muted)">On ${DAYS[activeDate.getDay()]} —</span> <strong>day off</strong>`;
+    }
+    btn.textContent = 'Change';
+  } else if (shift && shift.start && shift.end) {
+    const timeRange = `<strong>${fmtTime(shift.start)}</strong> to <strong>${fmtTime(shift.end)}</strong> (${fmtHours(shift.hours)})`;
+    if (isToday) {
+      txt.innerHTML = `Today I work from ${timeRange}`;
+    } else {
+      txt.innerHTML = `On ${DAYS[activeDate.getDay()]} I worked ${timeRange}`;
+    }
+    btn.textContent = 'Edit';
+  } else {
+    if (isToday) {
+      txt.innerHTML = `<span style="color:var(--muted)">Today I work from…</span>`;
+    } else {
+      txt.innerHTML = `<span style="color:var(--muted)">On ${DAYS[activeDate.getDay()]} I worked…</span>`;
+    }
+    btn.textContent = 'Set hours';
+  }
+
+  // Counts
+  let total=0;
+  UNITS.forEach(u=>{document.getElementById('count-'+u).textContent=data.counts[u];total+=data.counts[u];});
+  document.getElementById('totalDisplay').textContent=total;
+  document.getElementById('summarySubtitle').textContent=total===0?(isToday?'Tap + to log a unit':'No units logged this day'):total+' unit'+(total!==1?'s':'')+' logged';
+
+  // Hours block on summary card — reuse shift already loaded above
+  const hrs = shift?.hours;
+  const hrsBlock=document.getElementById('summaryHoursBlock');
+  if(hrs){hrsBlock.style.display='block';document.getElementById('summaryHours').textContent=fmtHours(hrs);}
+  else{hrsBlock.style.display='none';}
+
+  // Last posted
+  const lp=data.lastPosted;
+  const lpEl=document.getElementById('lastPostedText');
+  lpEl.textContent=lp?'Last posted '+lp:'';
+}
+
+// ── RENDER WEEK — Sunday first, always show all 7 days of week up to today ──
+function renderWeekPanel(){
+  const now=new Date();
+  const sun=sundayOfThisWeek();
+  let totalUnits=0,totalHours=0,hasHours=false;
+  const unitTotals={GSP:0,AC:0,BP:0,PM:0};
+  const dayEntries=[];
+
+  // Build all 7 days Sun→Sat, stop at today
+  for(let i=0;i<=6;i++){
+    const d=new Date(sun); d.setDate(sun.getDate()+i);
+    if(d>now) break; // don't show future days
+    const key=keyFromDate(d);
+    const data=loadDay(key);
+    const shift=loadShift(key);
+    const dayTotal=UNITS.reduce((s,u)=>s+(data.counts[u]||0),0);
+    UNITS.forEach(u=>unitTotals[u]+=(data.counts[u]||0));
+    totalUnits+=dayTotal;
+    if(shift?.hours){totalHours+=shift.hours;hasHours=true;}
+    dayEntries.push({key,d,data,shift,dayTotal});
+  }
+
+  document.getElementById('weekTotalVal').textContent=totalUnits;
+  document.getElementById('weekHoursVal').textContent=hasHours?fmtHours(Math.round(totalHours*10)/10):'—';
+  UNITS.forEach(u=>document.getElementById('week-'+u).textContent=unitTotals[u]);
+
+  const hist=document.getElementById('dayHistoryList');
+  if(!dayEntries.length){hist.innerHTML='<div class="lb-empty">No data this week yet</div>';return;}
+
+  // Show Sun first → today (already in order, no reverse)
+  hist.innerHTML=dayEntries.map(e=>{
+    const isToday=e.key===todayKey();
+    const cells=[['GSP','gsp'],['AC','ac'],['BP','bp'],['PM','pm']].map(([u,cls])=>{
+      const v=e.data.counts[u]||0;
+      return `<div class="day-unit-cell ${cls}${v===0?' zero':''}">
+        <div class="day-cell-label">${u==='AC'?'AC+':u}</div>
+        <div class="day-cell-val">${v}</div>
+      </div>`;
+    }).join('');
+    const hrs=e.shift?.hours?fmtHours(e.shift.hours):null;
+    return `<div class="day-card">
+      <div class="day-card-header">
+        <div class="day-card-name">
+          ${DAYS_SHORT[e.d.getDay()]}
+          ${isToday?'<span class="today-badge">Today</span>':''}
+        </div>
+        <div class="day-card-meta">${e.dayTotal} units${hrs?' · '+hrs:''}</div>
+      </div>
+      <div class="day-card-units">${cells}</div>
+    </div>`;
+  }).join('');
+}
+
+function bump(unit){
+  const el=document.getElementById('count-'+unit);
+  el.classList.remove('bumping');void el.offsetWidth;el.classList.add('bumping');
+  el.addEventListener('animationend',()=>el.classList.remove('bumping'),{once:true});
+}
+
+// ── LEADERBOARD ──
+const isConfigured=()=>SCRIPT_URL&&!SCRIPT_URL.includes('YOUR_APPS');
+const MONTH_NAMES=['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+// Month settings stored locally (pushed to sheet by manager)
+function loadMonthSettings() { return JSON.parse(localStorage.getItem('monthSettings')||'{}'); }
+function saveMonthSettings(s) { localStorage.setItem('monthSettings',JSON.stringify(s)); }
+
+function currentMonthKey() {
+  // Find which manager-defined month contains today
+  const settings = loadMonthSettings();
+  const today = todayKey();
+  for (const [key, m] of Object.entries(settings)) {
+    if (m.start && m.end && today >= m.start && today <= m.end) return key;
+  }
+  return null;
+}
+
+document.querySelectorAll('.seg-btn[data-period]').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.seg-btn[data-period]').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    lbPeriod=btn.dataset.period;
+    fetchLeaderboard();
+  });
+});
+
+document.getElementById('mgrLockBtn').addEventListener('click',()=>{
+  pinEntry='';updatePinDots();document.getElementById('pinErr').textContent='';
+  document.getElementById('pinSheet').classList.add('active');
+});
+document.getElementById('refreshBtn').addEventListener('click',()=>{
+  const btn=document.getElementById('refreshBtn');
+  btn.classList.add('spinning');
+  btn.addEventListener('animationend',()=>btn.classList.remove('spinning'),{once:true});
+  fetchLeaderboard();
+});
+
+async function fetchLeaderboard(){
+  if(!isConfigured()){document.getElementById('lbList').innerHTML='<div class="lb-error">Script URL not configured.</div>';return;}
+  document.getElementById('lbList').innerHTML='<div class="lb-empty">Loading…</div>';
+  document.getElementById('lbWeekBtn').textContent=weekRange();
+
+  // Update month button label
+  const mKey = currentMonthKey();
+  const settings = loadMonthSettings();
+  const mLabel = mKey && settings[mKey]
+    ? MONTH_NAMES[parseInt(mKey)] + ' (' + fmtDate(settings[mKey].start) + ' – ' + fmtDate(settings[mKey].end) + ')'
+    : 'This Month';
+  document.getElementById('lbMonthBtn').textContent = mLabel.length > 18 ? MONTH_NAMES[parseInt(mKey)||new Date().getMonth()] : mLabel;
+
+  try{
+    let url;
+    if (lbPeriod === 'month') {
+      const mk = currentMonthKey();
+      const ms = mk ? settings[mk] : null;
+      if (!ms) {
+        document.getElementById('lbList').innerHTML='<div class="lb-empty">No month dates set.<br/>Ask your manager to configure the month.</div>';
+        return;
+      }
+      url = SCRIPT_URL+'?action=get&period=month&monthStart='+ms.start+'&monthEnd='+ms.end;
+    } else {
+      url = SCRIPT_URL+'?action=get&period='+lbPeriod+'&date='+todayKey()+'&week='+weekKey();
+    }
+    const res=await fetch(url);
+    const data=await res.json();
+
+    // Sync month settings from server if manager updated them
+    if (data.monthSettings) {
+      saveMonthSettings(data.monthSettings);
+      renderManagerMonths();
+    }
+
+    // Check remote reset
+    const remoteReset = data.resetTimestamp || null;
+    const localAck    = localStorage.getItem('lastResetAck') || '0';
+    if (remoteReset && remoteReset > localAck) {
+      localStorage.setItem('lastResetAck', remoteReset);
+      clearLocalWeek();
+      showToast('Week reset by manager');
+    }
+
+    if (lbPeriod === 'month') {
+      renderMonthLeaderboard(data.monthEntries || [], settings[currentMonthKey()]);
+    } else {
+      renderLeaderboard(data.entries || []);
+    }
+    document.getElementById('lbUpdated').textContent='Updated '+new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+  }catch(err){
+    document.getElementById('lbList').innerHTML='<div class="lb-error">Couldn\'t load. Check your connection.</div>';
+  }
+}
+
+function fmtDate(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr+'T12:00:00');
+  return d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+}
+
+function renderLeaderboard(entries){
+  const myName=localStorage.getItem('userName')||'';
+  const list=document.getElementById('lbList');
+  if(!entries.length){list.innerHTML='<div class="lb-empty">No scores posted yet.<br/>Be the first!</div>';return;}
+  entries.sort((a,b)=>b.total-a.total);
+  list.innerHTML=entries.map((e,i)=>{
+    const rank=i+1;
+    const rankCls=rank<=3?' rank-'+rank:'';
+    const meCls=e.name.toLowerCase()===myName.toLowerCase()?' is-me':'';
+    const medal=rank===1?'🥇':rank===2?'🥈':rank===3?'🥉':rank;
+    const chips=UNITS.filter(u=>(e.counts[u]||0)>0)
+      .map(u=>`<span class="lb-chip ${u.toLowerCase()}">${u==='AC'?'AC+':u} ${e.counts[u]}</span>`).join('');
+    const hrs=e.shiftHours;
+    const hrsLabel=lbPeriod==='today'?'hrs today':'hrs this week';
+    return `<div class="lb-card${rankCls}${meCls}">
+      <div class="lb-card-top">
+        <div class="lb-rank">${medal}</div>
+        <div class="lb-name-wrap"><div class="lb-name">${e.name}</div></div>
+        <div style="text-align:right">
+          <div class="lb-total-big">${e.total}</div>
+          <div class="lb-total-lbl">UNITS</div>
+        </div>
+      </div>
+      <div class="lb-units-row">${chips||'<span style="font-size:11px;color:var(--muted)">No units yet</span>'}</div>
+      <div class="lb-hours-row">
+        <span class="lb-hours-icon">⏱</span>
+        <span class="lb-hours-text">${hrsLabel.toUpperCase()}</span>
+        <span class="lb-hours-val">${hrs?fmtHours(hrs):'—'}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderMonthLeaderboard(monthEntries, monthSettings) {
+  const myName = localStorage.getItem('userName') || '';
+  const list   = document.getElementById('lbList');
+
+  if (!monthEntries.length) {
+    list.innerHTML = '<div class="lb-empty">No data for this month yet.</div>'; return;
+  }
+
+  // monthEntries: [{ name, monthTotal, shiftHours, weeks: [{ weekLabel, weekStart, total, counts }] }]
+  monthEntries.sort((a,b) => b.monthTotal - a.monthTotal);
+
+  const monthLabel = monthSettings
+    ? fmtDate(monthSettings.start) + ' – ' + fmtDate(monthSettings.end)
+    : 'This Month';
+
+  list.innerHTML = `<div class="lb-month-heading">${monthLabel}</div>` +
+    monthEntries.map((e,i) => {
+      const rank    = i+1;
+      const rankCls = rank<=3 ? ' rank-'+rank : '';
+      const meCls   = e.name.toLowerCase() === myName.toLowerCase() ? ' is-me' : '';
+      const medal   = rank===1?'🥇':rank===2?'🥈':rank===3?'🥉':rank;
+
+      const weekRows = (e.weeks||[]).map(w => {
+        const wChips = UNITS.filter(u=>(w.counts[u]||0)>0)
+          .map(u=>`<span class="lb-chip ${u.toLowerCase()}" style="font-size:10px">${u==='AC'?'AC+':u} ${w.counts[u]}</span>`).join('');
+        return `<div class="lb-month-week-row">
+          <div class="lb-month-week-label">${w.weekLabel}</div>
+          <div class="lb-month-week-chips">${wChips||'<span style="font-size:10px;color:var(--muted)">—</span>'}</div>
+          <div class="lb-month-week-total">${w.total}</div>
+        </div>`;
+      }).join('');
+
+      return `<div class="lb-month-card${rankCls}${meCls}">
+        <div class="lb-month-header">
+          <div class="lb-month-rank">${medal}</div>
+          <div class="lb-month-name">${e.name}</div>
+          <div class="lb-month-total">${e.monthTotal}</div>
+        </div>
+        ${weekRows ? `<div class="lb-month-weeks">${weekRows}</div>` : ''}
+      </div>`;
+    }).join('');
+}
+
+// ── MANAGER PANEL ──
+const MONTH_KEYS = [0,1,2,3,4,5,6,7,8,9,10,11];
+let editingMonthIdx = null;
+
+function renderManagerMonths() {
+  const settings = loadMonthSettings();
+  const grid = document.getElementById('mgrMonthsGrid');
+  if (!grid) return;
+  grid.innerHTML = MONTH_NAMES.map((name, idx) => {
+    const m = settings[idx];
+    const hasDates = m && m.start && m.end;
+    return `<button class="mgr-month-btn ${hasDates?'has-dates':''}" onclick="openMonthDateSheet(${idx})">
+      <div class="mgr-month-name">${name}</div>
+      ${hasDates
+        ? `<div class="mgr-month-dates">${fmtDate(m.start)} – ${fmtDate(m.end)}</div>`
+        : `<div class="mgr-month-empty">Tap to set dates</div>`}
+    </button>`;
+  }).join('');
+}
+
+function openMonthDateSheet(idx) {
+  editingMonthIdx = idx;
+  document.getElementById('monthDateTitle').textContent = 'Set ' + MONTH_NAMES[idx] + ' Dates';
+  const settings = loadMonthSettings();
+  const m = settings[idx];
+  document.getElementById('monthStartDate').value = m?.start || '';
+  document.getElementById('monthEndDate').value   = m?.end   || '';
+  document.getElementById('monthDateSheet').classList.add('active');
+}
+
+document.getElementById('monthDateCancel').addEventListener('click', () => {
+  document.getElementById('monthDateSheet').classList.remove('active');
+});
+document.getElementById('monthDateOk').addEventListener('click', async () => {
+  const start = document.getElementById('monthStartDate').value;
+  const end   = document.getElementById('monthEndDate').value;
+  if (!start || !end) { showToast('Enter both dates'); return; }
+  if (end < start)    { showToast('End must be after start'); return; }
+
+  const settings = loadMonthSettings();
+  settings[editingMonthIdx] = { start, end };
+  saveMonthSettings(settings);
+  renderManagerMonths();
+  document.getElementById('monthDateSheet').classList.remove('active');
+  showToast(MONTH_NAMES[editingMonthIdx] + ' dates saved');
+
+  // Push month settings to sheet so all devices get them
+  try {
+    await fetch(SCRIPT_URL, {
+      method:'POST', mode:'no-cors',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action:'setMonthSettings', monthSettings: settings })
+    });
+  } catch { /* silent — will sync on next fetch */ }
+});
+
+// ── POST TO LEADERBOARD ──
+document.getElementById('submitBtn').addEventListener('click',()=>{
+  const name = localStorage.getItem('userName')||'Unknown';
+  const now  = new Date();
+  const sun  = sundayOfThisWeek();
+
+  // Check every day from Sunday to today for missing shift hours
+  const missingDays = [];
+  for (let i = 0; i <= 6; i++) {
+    const d = new Date(sun); d.setDate(sun.getDate()+i);
+    if (d > now) break;
+    const key   = keyFromDate(d);
+    const shift = loadShift(key);
+    // A day counts as "worked" if there are any units logged OR it's today
+    const data  = loadDay(key);
+    const hasUnits = UNITS.reduce((s,u) => s+(data.counts[u]||0), 0) > 0;
+    const isToday  = key === todayKey();
+    // Only require hours if they actually logged units that day OR it's today
+    // If no units and not today → auto day off, no action needed
+    const shiftResolved = shift && (shift.hours > 0 || shift.dayOff === true);
+    if ((hasUnits || isToday) && !shiftResolved) {
+      missingDays.push(DAYS[d.getDay()]);
+    }
+  }
+
+  if (missingDays.length > 0) {
+    // Show missing hours sheet instead of post sheet
+    const list = missingDays.length === 1
+      ? missingDays[0]
+      : missingDays.slice(0,-1).join(', ') + ' & ' + missingDays[missingDays.length-1];
+    document.getElementById('missingHoursBody').textContent =
+      `You're missing shift hours for: ${list}. Please set your hours for those days before posting.`;
+    document.getElementById('missingHoursSheet').classList.add('active');
+    return;
+  }
+
+  document.getElementById('postBody').textContent = `Post all of this week's scores to the leaderboard as ${name}?`;
+  document.getElementById('postSheet').classList.add('active');
+});
+document.getElementById('missingHoursOk').addEventListener('click',()=>document.getElementById('missingHoursSheet').classList.remove('active'));
+document.getElementById('postCancel').addEventListener('click',()=>document.getElementById('postSheet').classList.remove('active'));
+document.getElementById('postOk').addEventListener('click',async()=>{
+  document.getElementById('postSheet').classList.remove('active');
+  const name=localStorage.getItem('userName')||'Unknown';
+  const btn=document.getElementById('submitBtn');
+  btn.disabled=true; btn.textContent='Posting…';
+
+  const now=new Date();
+  const sun=sundayOfThisWeek();
+  const postTime=now.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+  const postDate=now.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+
+  try {
+    const sunKey  = keyFromDate(sun);
+    const satDate = new Date(sun); satDate.setDate(sun.getDate()+6);
+    const satKey  = keyFromDate(satDate);
+
+    // Accumulate totals across the whole week
+    let weekCounts = {GSP:0,AC:0,BP:0,PM:0};
+    let weekTotal  = 0;
+    let weekHours  = 0;
+
+    // Step 1: post each day individually to the Leaderboard sheet
+    for(let i=0;i<=6;i++){
+      const d=new Date(sun); d.setDate(sun.getDate()+i);
+      if(d>now) break;
+      const key=keyFromDate(d);
+      const data=loadDay(key);
+      const shift=loadShift(key);
+      const total=UNITS.reduce((s,u)=>s+data.counts[u],0);
+      const dayLabel=DAYS_SHORT[d.getDay()];
+
+      // Auto-assume day off for days with no units and no shift set
+      const resolvedShift = shift || (total===0 ? {dayOff:true,hours:0} : null);
+      if (!shift && total===0) saveShift({dayOff:true,start:null,end:null,hours:0}, key);
+
+      UNITS.forEach(u => weekCounts[u] += data.counts[u]||0);
+      weekTotal  += total;
+      weekHours  += resolvedShift?.hours || 0;
+
+      await fetch(SCRIPT_URL,{
+        method:'POST', mode:'no-cors',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          action:'post', name, date:key, week:weekKey(d),
+          counts:data.counts, total,
+          shiftHours: resolvedShift?.hours||null
+        })
+      });
+
+      // Save last posted with day label and time
+      data.lastPosted=`${dayLabel}, ${postDate} at ${postTime}`;
+      localStorage.setItem('day-'+key, JSON.stringify(data));
+    }
+
+    // Step 2: send ONE archive post with the full week totals to History sheet
+    await fetch(SCRIPT_URL,{
+      method:'POST', mode:'no-cors',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        action:'archiveWeek', name,
+        weekStart: sunKey, weekEnd: satKey,
+        week: weekKey(sun),
+        counts: weekCounts, total: weekTotal,
+        shiftHours: weekHours > 0 ? weekHours : null
+      })
+    });
+
+    renderTodayPanel();
+    showToast('All days posted ✓');
+  } catch {
+    showToast('Post failed — check connection');
+  } finally {
+    btn.disabled=false; btn.innerHTML='🏆 Post to Leaderboard';
+  }
+});
+
+// ── RESET ──
+document.getElementById('resetDayBtn').addEventListener('click',()=>{
+  confirmAction='day';
+  document.getElementById('confirmTitle').textContent='Reset this day?';
+  document.getElementById('confirmBody').textContent='Clears all counts for '+(dayOffset===0?'today':DAYS[dateFromOffset(dayOffset).getDay()])+'. Can\'t be undone.';
+  document.getElementById('confirmSheet').classList.add('active');
+});
+document.getElementById('resetWeekBtn').addEventListener('click',()=>{
+  confirmAction='week';
+  document.getElementById('confirmTitle').textContent='Reset this week?';
+  document.getElementById('confirmBody').textContent='Clears all data for the current week. Can\'t be undone.';
+  document.getElementById('confirmSheet').classList.add('active');
+});
+document.getElementById('confirmCancel').addEventListener('click',()=>{document.getElementById('confirmSheet').classList.remove('active');confirmAction=null;});
+document.getElementById('confirmOk').addEventListener('click',()=>{
+  document.getElementById('confirmSheet').classList.remove('active');
+  if(confirmAction==='day'){
+    localStorage.removeItem('day-'+activeKey());
+    renderTodayPanel();renderWeekPanel();showToast('Day reset ✓');
+  } else if(confirmAction==='week'){
+    const sun=sundayOfThisWeek();
+    for(let i=0;i<=6;i++){
+      const d=new Date(sun);d.setDate(sun.getDate()+i);
+      localStorage.removeItem('day-'+keyFromDate(d));
+      localStorage.removeItem('shift-'+keyFromDate(d));
+    }
+    localStorage.removeItem(weekKey());
+    renderTodayPanel();renderWeekPanel();showToast('Week reset ✓');
+  } else if(confirmAction==='leaderboard'){
+    doClearLeaderboard();
+  }
+  confirmAction=null;
+});
+
+// ── LOCAL WEEK WIPE ──
+function clearLocalWeek() {
+  const sun = sundayOfThisWeek();
+  for (let i = 0; i <= 6; i++) {
+    const d = new Date(sun); d.setDate(sun.getDate() + i);
+    const key = keyFromDate(d);
+    localStorage.removeItem('day-' + key);
+    localStorage.removeItem('shift-' + key);
+  }
+  localStorage.removeItem(weekKey());
+  dayOffset = 0;
+  renderTodayPanel();
+  renderWeekPanel();
+}
+
+// ── MANAGER PIN ──
+document.getElementById('mgrClearBtn').addEventListener('click',()=>{
+  confirmAction='leaderboard';
+  document.getElementById('confirmTitle').textContent='Clear Leaderboard?';
+  document.getElementById('confirmBody').textContent='This wipes current week scores for all employees and resets their local week data.';
+  document.getElementById('confirmSheet').classList.add('active');
+});
+document.getElementById('pinCancel').addEventListener('click',()=>document.getElementById('pinSheet').classList.remove('active'));
+document.querySelectorAll('.pin-key[data-d]').forEach(k=>{
+  k.addEventListener('click',()=>{
+    if(pinEntry.length>=6) return;
+    pinEntry+=k.dataset.d;updatePinDots();
+    if(pinEntry.length===6) checkPin();
+  });
+});
+document.getElementById('pinDel').addEventListener('click',()=>{
+  pinEntry=pinEntry.slice(0,-1);updatePinDots();
+  document.getElementById('pinErr').textContent='';
+});
+function updatePinDots(){for(let i=0;i<6;i++)document.getElementById('pd'+i).classList.toggle('filled',i<pinEntry.length);}
+async function checkPin(){
+  if(pinEntry!==MANAGER_PIN){document.getElementById('pinErr').textContent='Incorrect PIN';pinEntry='';updatePinDots();return;}
+  document.getElementById('pinSheet').classList.remove('active');
+  // Reveal manager tab and switch to it
+  document.getElementById('managerTab').style.display='flex';
+  switchTab('manager');
+  renderManagerMonths();
+  showToast('Manager mode unlocked');
+}
+
+async function doClearLeaderboard(){
+  showToast('Clearing…');
+  try{
+    const resetTs = Date.now().toString();
+    await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({action:'clear', resetTimestamp: resetTs})
+    });
+    localStorage.setItem('lastResetAck', resetTs);
+    clearLocalWeek();
+    showToast('Leaderboard & week cleared ✓');
+    fetchLeaderboard();
+  }catch{showToast('Clear failed');}
+}
+
+// ── DARK MODE ──
+function applyTheme(theme){
+  document.documentElement.setAttribute('data-theme',theme);
+  localStorage.setItem('theme',theme);
+  const toggle=document.getElementById('themeToggle');
+  if(toggle) toggle.textContent=theme==='dark'?'☀️':'🌙';
+  const meta=document.getElementById('themeColorMeta');
+  if(meta) meta.content=theme==='dark'?'#000000':'#f2f2f7';
+}
+function toggleTheme(){
+  const cur=document.documentElement.getAttribute('data-theme');
+  const isDark=cur==='dark'||(!cur&&window.matchMedia('(prefers-color-scheme: dark)').matches);
+  applyTheme(isDark?'light':'dark');
+}
+
+// ── TOAST ──
+let toastTimer;
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),2000);
+}
+</script>
+</body>
+</html>
